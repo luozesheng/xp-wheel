@@ -2,14 +2,21 @@ import Scene from './Scene';
 import gsap from 'gsap';
 import Wheel from '../components/Wheel';
 import { fit } from '../core/utils';
+import Tsuro from '../components/Tsuro';
 
 export default class Play extends Scene {
   async onCreated() {
     this.wheel = new Wheel();
+    
+    const tsuro = new Tsuro();
 
-    this.fitWheel(window.innerWidth, window.innerHeight);
-    this.bounceWheel();
-    this.addChild(this.wheel);
+    tsuro.once(Tsuro.events.SHOW_END, () => {
+      this.addChild(this.wheel);
+      this.bounceWheel();
+    });
+
+    gsap.fromTo(tsuro, { x: 1000 }, { x: 400, duration: 1.5 });
+    this.addChild(tsuro);
 
     document.addEventListener('keydown', this._handleKeydown.bind(this));
   }
@@ -28,6 +35,7 @@ export default class Play extends Scene {
   }
 
   async bounceWheel() {
+    this.fitWheel(window.innerWidth, window.innerHeight);
     const height = window.innerHeight / 2;
     await gsap.fromTo(this.wheel, { y: -2000 }, { y: height, duration: 2, ease: 'bounce' });
     // this.wheel.idleSpin();

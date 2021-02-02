@@ -31,7 +31,7 @@ export default class Splash extends Scene {
       sector1: Assets.images.sector1,
       sector2: Assets.images.sector2,
       star: Assets.images.star,
-      wheel: Assets.images.wheel
+      wheel: Assets.images.wheel,
     };
     const sounds = {
       

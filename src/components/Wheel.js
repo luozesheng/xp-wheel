@@ -10,7 +10,7 @@ export default class Wheel extends Container {
     this._flap = new Sprite.from('flap');
 
     this._sectors = new Container();
-    this._brightnessFilter = this.createBrightnessFilter(0.5);
+    this._brightnessFilter = this._createBrightnessFilter(0.5);
 
     this.idleSpinTween = null;
 
@@ -19,6 +19,15 @@ export default class Wheel extends Container {
     this.spinning = false;
 
     this._addWheel();
+  }
+
+  static get events() {
+    return {
+      SPIN_START: 'spin_start',
+      SPIN_END: 'spin_end',
+      HIDE_START: 'hide_start',
+      HIDE_END: 'hide_end',
+    };
   }
 
   _addPrompt() {
@@ -54,7 +63,7 @@ export default class Wheel extends Container {
     this.addChild(this._sectors);
   }
 
-  createBrightnessFilter(b) {
+  _createBrightnessFilter(b) {
     const filter = new filters.ColorMatrixFilter();
 
     if (b > 0) {
@@ -122,6 +131,7 @@ export default class Wheel extends Container {
     if (this.spinning) return;
     if (this.idleSpinTween) this.idleSpinTween.kill();
 
+    this.emit(Wheel.events.SPIN_START);
     this.spinning = true;
     gsap.to(this._prompt, { alpha: 0, duration: 0.1 });
 
@@ -135,11 +145,13 @@ export default class Wheel extends Container {
   }
 
   async _onSpinComplete() {
+    this.emit(Wheel.events.SPIN_END);
+
     await this._flashActiveSector();
     await gsap.to(this._prompt, { alpha: 1 });
     this.spinning = false;
-    this._sectors.rotation = 0;
-    this.idleSpin();
+    // this._sectors.rotation = 0;
+    // this.idleSpin();
   }
 
   async _flashActiveSector() {
