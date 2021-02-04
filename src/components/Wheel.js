@@ -12,7 +12,10 @@ export default class Wheel extends Container {
     super();
 
     this._wheel = new Sprite.from('wheel');
+    this._wheel.name = 'wheel';
+
     this._flap = new Sprite.from('flap');
+    this._flap.name = 'flap';
 
     this._sectors = new Container();
     this._brightnessFilter = this._createBrightnessFilter(0.5);
@@ -80,9 +83,10 @@ export default class Wheel extends Container {
       });
 
       const sectorRotation = i * Math.PI / (numberOfSectors / 2);
-
+      
       sectorSprite.anchor.set(0.5, 1);
       sectorSprite.rotation = sectorRotation;
+      sectorSprite.name = 'sector';
 
       text.anchor.set(-0.5);
       text.pivot.set(-100, 55);
@@ -247,11 +251,18 @@ export default class Wheel extends Container {
     await delay(500);
   }
 
+  /**
+   * Emits particles while the wheel is spinning
+   * @private
+   */
   _emitParticles() {
     const particleInterval = setInterval(async () => {
       if (!this.spinning) clearInterval(particleInterval);
 
       const particle = new Sprite.from('star');
+      particle.name = 'particle';
+      particle.anchor.set(0.5);
+      
       this._particles.addChild(particle);
       
       gsap.to(particle, { y: window.innerHeight, ease: 'back.in(5)', duration: 2 });

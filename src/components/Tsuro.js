@@ -9,6 +9,8 @@ export default class Tsuro extends Container {
     this.texture = Texture.from(this.videoURL);
 
     this.videoSprite = new Sprite(this.texture);
+    this.videoSprite.name = 'tsuro';
+
     this.video = this.videoSprite.texture.baseTexture.resource.source;
 
     this.video.loop = true;

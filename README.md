@@ -1,7 +1,6 @@
 # Wheel of XP
 Booost bounty task
 
-![](https://faust.s-ul.eu/PcNbt05A)
 ## Available Commands
 
 | Command | Description |

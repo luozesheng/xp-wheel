@@ -52,11 +52,6 @@ export default class Play extends Scene {
       width,
       height: height - 10,
     }, false, true);
-
-    fit(this.tsuro, {
-      width,
-      height: height / 2,
-    }, false, true);
   }
 
   /**
