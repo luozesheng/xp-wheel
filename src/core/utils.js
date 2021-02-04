@@ -52,7 +52,7 @@ export function distanceBetween2PointsSquared(p1, p2) {
 }
 
 /**
- * setTimeout wrapped in a promise
+ * @desc setTimeout wrapped in a promise
  * @param {Number} time 
  * @returns {Promise}
  */

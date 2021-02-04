@@ -18,6 +18,8 @@ export default class GameApplication extends Application {
 
     this.setupViewport();
     this.initGame();
+
+    this.container = this.view;
   }
 
   /**

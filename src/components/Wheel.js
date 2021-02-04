@@ -2,6 +2,10 @@ import gsap from 'gsap/gsap-core';
 import { Container, Sprite, filters, Text, Graphics } from 'pixi.js';
 import { delay, distanceBetween2PointsSquared } from '../core/utils';
 
+/**
+ * Class representing a 'wheel of fortune'
+ * @extends PIXI.Container
+ */
 export default class Wheel extends Container {
   constructor() {
     super();
@@ -18,9 +22,13 @@ export default class Wheel extends Container {
 
     this.spinning = false;
 
-    this._addWheel();
+    this._addParts();
   }
 
+  /**
+   * Get wheel events
+   * @return {Object} { SPIN_START, SPIN_END, HIDE_START, HIDE_END }
+   */
   static get events() {
     return {
       SPIN_START: 'spin_start',
@@ -30,23 +38,33 @@ export default class Wheel extends Container {
     };
   }
 
+  /**
+   * Adds the text prompt
+   * @private
+   */
   _addPrompt() {
-    const text = new Text('НАТИСНИ "SPACE"', {
+    const promptText = 'НАТИСНИ "SPACE"';
+
+    const text = new Text(promptText, {
       fill: 0xFFD81F,
       fontSize: 40,
       fontWeight: 'bold'
     });
     text.anchor.set(0.5);
 
-    const graphics = new Graphics();
-    graphics.lineStyle(5, 0xFFD81F);
-    graphics.drawRect(-225, -30, 450, 60);
+    const borderGraphics = new Graphics();
+    borderGraphics.lineStyle(5, 0xFFD81F);
+    borderGraphics.drawRect(-225, -30, 450, 60);
     
     this._prompt.addChild(text);
-    this._prompt.addChild(graphics);
+    this._prompt.addChild(borderGraphics);
     this.addChild(this._prompt);
   }
 
+  /**
+   * Adds the wheel sectors/slices
+   * @private
+   */
   _addSectors() {
     const numberOfSectors = 12;
 
@@ -63,6 +81,11 @@ export default class Wheel extends Container {
     this.addChild(this._sectors);
   }
 
+  /**
+   * @private
+   * @param {Number} brightness from -1 to 1  
+   * @return {PIXI.filters.ColorMatrixFilter}
+   */
   _createBrightnessFilter(b) {
     const filter = new filters.ColorMatrixFilter();
 
@@ -83,10 +106,19 @@ export default class Wheel extends Container {
     return filter;
   }
 
+  /**
+   * Get the active sector (slice under the triangle)
+   * @return {PIXI.Sprite}
+   */
   get activeSector() {
     return this._sectors.children[this._getActiveSectorIndex()];
   }
 
+  /**
+   * Get the selected sector index
+   * @private
+   * @return {Number} The selected sector index
+   */
   _getActiveSectorIndex() {
     const sectors = this._sectors.children;
 
@@ -119,6 +151,10 @@ export default class Wheel extends Container {
     return closestSector.index;
   }
 
+  /**
+   * Called every time the wheel's rotation changes
+   * @private
+   */
   _onRotation() {
     const activeSectorIndex = this._getActiveSectorIndex();
 
@@ -127,11 +163,16 @@ export default class Wheel extends Container {
     });
   }
 
+  /**
+   * Spins the wheel
+   * @return {Promise}
+   */
   async spinWheel() {
     if (this.spinning) return;
     if (this.idleSpinTween) this.idleSpinTween.kill();
 
     this.emit(Wheel.events.SPIN_START);
+
     this.spinning = true;
     gsap.to(this._prompt, { alpha: 0, duration: 0.1 });
 
@@ -144,16 +185,22 @@ export default class Wheel extends Container {
     });
   }
 
+  /**
+   * Called when the wheel stops spinning
+   * @private
+   * @return {Promise}
+   */
   async _onSpinComplete() {
-    this.emit(Wheel.events.SPIN_END);
-
     await this._flashActiveSector();
-    await gsap.to(this._prompt, { alpha: 1 });
+    this.emit(Wheel.events.SPIN_END);
     this.spinning = false;
-    // this._sectors.rotation = 0;
-    // this.idleSpin();
   }
 
+  /**
+   * Flashes the active sector 3 times when the wheel stops spinning
+   * @private
+   * @return {Promise}
+   */
   async _flashActiveSector() {
     for (let i = 0; i < 3; i++) {
       this.activeSector.filters = [];
@@ -161,13 +208,14 @@ export default class Wheel extends Container {
       this.activeSector.filters = [this._brightnessFilter];
       await delay(500);
     }
+    await delay(500);
   }
 
-  _distanceBetween2PointsSquared(p1, p2) {
-    return ((p2.x - p1.x) ** 2 + (p2.y - p1.y) ** 2); 
-  }
-
+  /**
+   * Starts the idle spinning animation
+   */
   idleSpin() {
+    this._sectors.rotation = 0;
     this.idleSpinTween = gsap.to(this._sectors, { 
       rotation: Math.PI * 2, 
       repeat: -1, 
@@ -177,7 +225,11 @@ export default class Wheel extends Container {
     });
   }
 
-  _addWheel() {
+  /**
+   * Adds all the parts of the wheel
+   * @private
+   */
+  _addParts() {
     this._wheel.anchor.set(0.5, 1);
     this._wheel.y = + 5;
 

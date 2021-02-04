@@ -8,11 +8,19 @@ export default class Tsuro extends Container {
     this.texture = Texture.from('https://assets.moovly.com/converted/video/video-web_c37ff62b-9b0f-4297-bde3-ca64e7aa5c10-cfc590c0-a435-11e7-9e5d-065f749c91a0-480p.webm');
 
     this.videoSprite = new Sprite(this.texture);
+    this.video = this.videoSprite.texture.baseTexture.resource.source;
+
+    this.init();
+  }
+
+  init() {
+    this.video.loop = true;
+    this.video.muted = true;
 
     this.addChild(this.videoSprite);
 
     this.emit(Tsuro.events.SHOW_START);
-    setTimeout(() => { this.emit(Tsuro.events.SHOW_END); }, 1500);
+    setTimeout(() => { this.emit(Tsuro.events.SHOW_END); }, 2000);
   }
 
   static get events() {
