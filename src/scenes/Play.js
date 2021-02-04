@@ -6,22 +6,26 @@ import Tsuro from '../components/Tsuro';
 
 export default class Play extends Scene {
   async onCreated() {
-    this.wheel = new Wheel();
     this.tsuro = new Tsuro();
+    this.wheel = new Wheel();
     
-    this.wheel.once(Wheel.events.SPIN_END, this.hideWheel.bind(this));
     this.tsuro.once(Tsuro.events.SHOW_END, this.showWheel.bind(this));
-
+    this.wheel.once(Wheel.events.SPIN_END, this.hideWheel.bind(this));
+    
     this.showTsuro();
-
-    document.addEventListener('keydown', this.handleKeydown.bind(this));
   }
 
   /**
    * Adds 'tsuro' to the scene with an animation
    */
   showTsuro() {
-    gsap.fromTo(this.tsuro, { x: 1000 }, { x: 400, duration: 2 });
+    this.tsuro.y = window.innerHeight / 2;
+
+    gsap.fromTo(this.tsuro, 
+      { x: window.innerWidth / 2 }, 
+      { x: 400, duration: 2 }
+    );
+    
     this.addChild(this.tsuro);
   }
 
@@ -30,29 +34,39 @@ export default class Play extends Scene {
    * @param {Event} e keydown event
    */
   handleKeydown(e) {
-    if (e.code === 'Space') this.wheel.spinWheel();
+    if (e.code === 'Space') {
+      this.wheel.spinWheel();
+    }
   }
 
   /**
-   * Fits the wheel in the window
+   * Fits the wheel inside the window
    * @param {Number} width window width
    * @param {Number} height window height
    */
-  fitWheel(width, height) {
+  fitElements(width, height) {
     this.wheel.y = height / 2;
+    this.tsuro.y = height / 2;
 
     fit(this.wheel, {
       width,
       height: height - 10,
+    }, false, true);
+
+    fit(this.tsuro, {
+      width,
+      height: height / 2,
     }, false, true);
   }
 
   /**
    * Shows the wheel
    */
-  showWheel() {
+  async showWheel() {
     this.addChild(this.wheel);
-    this.bounceWheel();
+    await this.bounceWheel();
+    
+    document.addEventListener('keydown', this.handleKeydown.bind(this));
   }
 
   /**
@@ -78,10 +92,10 @@ export default class Play extends Scene {
    * @return {Promise}
    */
   async bounceWheel() {
-    this.fitWheel(window.innerWidth, window.innerHeight);
+    this.fitElements(window.innerWidth, window.innerHeight);
     const height = window.innerHeight / 2;
 
-    await gsap.fromTo(this.wheel, { y: -2000 }, { y: height, duration: 2, ease: 'bounce' });
+    await gsap.fromTo(this.wheel, { y: -window.innerHeight }, { y: height, duration: 2, ease: 'bounce' });
   }
 
   /**
@@ -92,6 +106,6 @@ export default class Play extends Scene {
    * @param  {Number} height Window height
    */
   onResize(width, height) { // eslint-disable-line no-unused-vars
-    this.fitWheel(width, height);
+    this.fitElements(width, height);
   }
 }

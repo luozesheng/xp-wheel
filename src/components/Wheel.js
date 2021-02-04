@@ -1,6 +1,7 @@
 import gsap from 'gsap/gsap-core';
 import { Container, Sprite, filters, Text, Graphics } from 'pixi.js';
 import { delay, distanceBetween2PointsSquared } from '../core/utils';
+import Assets from '../core/AssetManager';
 
 /**
  * Class representing a 'wheel of fortune'
@@ -19,6 +20,7 @@ export default class Wheel extends Container {
     this.idleSpinTween = null;
 
     this._prompt = new Container();
+    this._particles = new Container();
 
     this.spinning = false;
 
@@ -69,11 +71,25 @@ export default class Wheel extends Container {
     const numberOfSectors = 12;
 
     for (let i = 0; i < numberOfSectors; i++) {
-      const sector = new Sprite.from(`sector${i % 2 + 1}`);
+      const sector = new Container();
+      const sectorSprite = new Sprite.from(`sector${i % 2 + 1}`);
+      const text = new Text(`${i % 3 + 1}00xp`, {
+        fontSize: 50,
+        fontWeight: 'bold',
+        fill: (i % 2) ? 0x8342BE : 0xFFD81F,
+      });
 
-      sector.anchor.set(0.5, 1);
-      sector.rotation = i * Math.PI / (numberOfSectors / 2);
-      
+      const sectorRotation = i * Math.PI / (numberOfSectors / 2);
+
+      sectorSprite.anchor.set(0.5, 1);
+      sectorSprite.rotation = sectorRotation;
+
+      text.anchor.set(-0.5);
+      text.pivot.set(-100, 55);
+      text.rotation = sectorRotation - Math.PI / 2;
+
+      sector.addChild(sectorSprite);
+      sector.addChild(text);
       this._sectors.addChild(sector);
     }
 
@@ -164,6 +180,22 @@ export default class Wheel extends Container {
   }
 
   /**
+   * Blur the wheel while spinning
+   * @private
+   * @return {Promise}
+   */
+  async _blurWheel() {
+    const blurFilter = new filters.BlurFilter();
+
+    this._sectors.filters = [blurFilter];
+
+    gsap.to(blurFilter.blurXFilter, { strength: 0, duration: 8 });
+    await gsap.to(blurFilter.blurYFilter, { strength: 0, duration: 8 });
+
+    this._sectors.filters = [];
+  }
+
+  /**
    * Spins the wheel
    * @return {Promise}
    */
@@ -172,16 +204,20 @@ export default class Wheel extends Container {
     if (this.idleSpinTween) this.idleSpinTween.kill();
 
     this.emit(Wheel.events.SPIN_START);
+    Assets.sounds.spinningWheel.play();
 
     this.spinning = true;
-    gsap.to(this._prompt, { alpha: 0, duration: 0.1 });
+    this._blurWheel();
+    this._emitParticles();
+    gsap.to(this._prompt, { alpha: 0, duration: 0.1 }); // Hide text prompt
 
     this._sectors.rotation = 0;
     await gsap.to(this._sectors, {
       rotation: 40 + (Math.random() * Math.PI * 2),
-      duration: 7,
+      duration: 9,
       onUpdate: this._onRotation.bind(this),
-      onComplete: this._onSpinComplete.bind(this)
+      onComplete: this._onSpinComplete.bind(this),
+      ease: 'power2'
     });
   }
 
@@ -191,9 +227,9 @@ export default class Wheel extends Container {
    * @return {Promise}
    */
   async _onSpinComplete() {
+    this.spinning = false;
     await this._flashActiveSector();
     this.emit(Wheel.events.SPIN_END);
-    this.spinning = false;
   }
 
   /**
@@ -209,6 +245,25 @@ export default class Wheel extends Container {
       await delay(500);
     }
     await delay(500);
+  }
+
+  _emitParticles() {
+    const particleInterval = setInterval(async () => {
+      if (!this.spinning) clearInterval(particleInterval);
+
+      const particle = new Sprite.from('star');
+      this._particles.addChild(particle);
+      
+      gsap.to(particle, { y: window.innerHeight, ease: 'back.in(5)', duration: 2 });
+      gsap.to(particle.scale, { x: 0, y: 0, duration: 2 });
+      await gsap.to(particle, { 
+        x: (window.innerWidth * Math.random() + 500) * (Math.random() > 0.5 ? -1 : 1), 
+        rotation: Math.PI * Math.random() * 4,
+        duration: 2
+      });
+      
+      this._particles.removeChild(particle);
+    }, 50);
   }
 
   /**
@@ -237,7 +292,9 @@ export default class Wheel extends Container {
     this._flap.y = -this._wheel.height + 60;
     
     this._prompt.y = -this._wheel.height - 70;
+    this._particles.y = -(this._wheel.height / 2);
 
+    this.addChild(this._particles);
     this.addChild(this._wheel);
     this._addSectors();
     this.addChild(this._flap);

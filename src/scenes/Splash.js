@@ -34,7 +34,7 @@ export default class Splash extends Scene {
       wheel: Assets.images.wheel,
     };
     const sounds = {
-      
+      spinningWheel: Assets.sounds.spinningWheel, // Credit: https://www.youtube.com/channel/UCA8luKdJ7MAFj4-LB3gFjXQ
     };
 
     return super.preload({ images, sounds });
