@@ -1,5 +1,10 @@
 import { Container, Sprite, Texture } from 'pixi.js';
+import config from '../config';
 
+/**
+ * Class representing Tsuro (placeholder)
+ * @extends PIXI.Container
+ */
 export default class Tsuro extends Container {
   constructor() {
     super();
@@ -24,14 +29,7 @@ export default class Tsuro extends Container {
     this.videoSprite.anchor.set(0, 1);
     this.addChild(this.videoSprite);
 
-    this.emit(Tsuro.events.SHOW_START);
-    setTimeout(() => { this.emit(Tsuro.events.SHOW_END); }, 2000);
-  }
-
-  static get events() {
-    return {
-      SHOW_END: 'show_end',
-      SHOW_START: 'show_start',
-    };
+    this.emit(config.events.SHOW_START);
+    setTimeout(() => { this.emit(config.events.SHOW_END); }, 2000);
   }
 }

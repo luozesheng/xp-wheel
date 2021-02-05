@@ -1,69 +1,38 @@
 import gsap from 'gsap/gsap-core';
-import { Container, Sprite, filters, Text, Graphics } from 'pixi.js';
+import { Container, Sprite, filters } from 'pixi.js';
 import { delay, distanceBetween2PointsSquared } from '../core/utils';
 import Assets from '../core/AssetManager';
+import Prompt from './Prompt';
+import Flap from './Flap';
+import Sector from './Sector';
+import config from '../config';
 
 /**
  * Class representing a 'wheel of fortune'
  * @extends PIXI.Container
  */
 export default class Wheel extends Container {
-  constructor() {
+  constructor(sectorValues) {
     super();
 
+    this.sectorValues = sectorValues;
     this._wheel = new Sprite.from('wheel');
     this._wheel.name = 'wheel';
 
-    this._flap = new Sprite.from('flap');
-    this._flap.name = 'flap';
+    this._prompt = new Prompt('НАТИСНИ "SPACE"');
+    this._flap = new Flap();
 
     this._sectors = new Container();
     this._brightnessFilter = this._createBrightnessFilter(0.5);
 
     this.idleSpinTween = null;
 
-    this._prompt = new Container();
     this._particles = new Container();
 
     this.spinning = false;
+    this.previousActiveSector = -1;
 
     this._addParts();
-  }
-
-  /**
-   * Get wheel events
-   * @return {Object} { SPIN_START, SPIN_END, HIDE_START, HIDE_END }
-   */
-  static get events() {
-    return {
-      SPIN_START: 'spin_start',
-      SPIN_END: 'spin_end',
-      HIDE_START: 'hide_start',
-      HIDE_END: 'hide_end',
-    };
-  }
-
-  /**
-   * Adds the text prompt
-   * @private
-   */
-  _addPrompt() {
-    const promptText = 'НАТИСНИ "SPACE"';
-
-    const text = new Text(promptText, {
-      fill: 0xFFD81F,
-      fontSize: 40,
-      fontWeight: 'bold'
-    });
-    text.anchor.set(0.5);
-
-    const borderGraphics = new Graphics();
-    borderGraphics.lineStyle(5, 0xFFD81F);
-    borderGraphics.drawRect(-225, -30, 450, 60);
-    
-    this._prompt.addChild(text);
-    this._prompt.addChild(borderGraphics);
-    this.addChild(this._prompt);
   }
 
   /**
@@ -74,26 +43,8 @@ export default class Wheel extends Container {
     const numberOfSectors = 12;
 
     for (let i = 0; i < numberOfSectors; i++) {
-      const sector = new Container();
-      const sectorSprite = new Sprite.from(`sector${i % 2 + 1}`);
-      const text = new Text(`${i % 3 + 1}00xp`, {
-        fontSize: 50,
-        fontWeight: 'bold',
-        fill: (i % 2) ? 0x8342BE : 0xFFD81F,
-      });
-
       const sectorRotation = i * Math.PI / (numberOfSectors / 2);
-      
-      sectorSprite.anchor.set(0.5, 1);
-      sectorSprite.rotation = sectorRotation;
-      sectorSprite.name = 'sector';
-
-      text.anchor.set(-0.5);
-      text.pivot.set(-100, 55);
-      text.rotation = sectorRotation - Math.PI / 2;
-
-      sector.addChild(sectorSprite);
-      sector.addChild(text);
+      const sector = new Sector(i, this.sectorValues[i], sectorRotation);
       this._sectors.addChild(sector);
     }
 
@@ -145,7 +96,7 @@ export default class Wheel extends Container {
     const flapBounds = this._flap.getBounds();
     const flapPoint = {
       x: flapBounds.x + flapBounds.width / 2,
-      y: flapBounds.y + flapBounds.height
+      y: flapBounds.y + flapBounds.height / 2
     };
 
     const closestSector = {
@@ -177,6 +128,11 @@ export default class Wheel extends Container {
    */
   _onRotation() {
     const activeSectorIndex = this._getActiveSectorIndex();
+    if (activeSectorIndex === this.previousActiveSector) return;
+
+    this.previousActiveSector = activeSectorIndex;
+    this._flap.flap();
+    if (this.spinning) Assets.sounds.wheelTick.play();
 
     this._sectors.children.forEach((sector, index) => {
       sector.filters = activeSectorIndex === index ? [this._brightnessFilter] : [];
@@ -203,12 +159,13 @@ export default class Wheel extends Container {
    * Spins the wheel
    * @return {Promise}
    */
-  async spinWheel() {
+  async spinWheel(result) {
     if (this.spinning) return;
     if (this.idleSpinTween) this.idleSpinTween.kill();
 
-    this.emit(Wheel.events.SPIN_START);
-    Assets.sounds.spinningWheel.play();
+    console.log(result);
+    this.emit(config.events.SPIN_START);
+    // Assets.sounds.spinning.play();
 
     this.spinning = true;
     this._blurWheel();
@@ -232,8 +189,10 @@ export default class Wheel extends Container {
    */
   async _onSpinComplete() {
     this.spinning = false;
+    Assets.sounds.spinComplete.play();
+
     await this._flashActiveSector();
-    this.emit(Wheel.events.SPIN_END);
+    this.emit(config.events.SPIN_END);
   }
 
   /**
@@ -309,7 +268,7 @@ export default class Wheel extends Container {
     this.addChild(this._wheel);
     this._addSectors();
     this.addChild(this._flap);
-    this._addPrompt();
+    this.addChild(this._prompt);
 
     this.idleSpin();
   }
