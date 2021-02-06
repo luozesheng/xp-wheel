@@ -32,16 +32,6 @@ export default class Play extends Scene {
   }
 
   /**
-   * Handles the keydown event
-   * @param {Event} e keydown event
-   */
-  handleKeydown(e) {
-    if (e.code === 'Space') {
-      this.wheel.spinWheel();
-    }
-  }
-
-  /**
    * Fits the wheel inside the window
    * @param {Number} width window width
    * @param {Number} height window height
@@ -63,8 +53,6 @@ export default class Play extends Scene {
     this.emit(config.events.SHOW_END);
     this.addChild(this.wheel);
     await this.bounceWheel();
-    
-    document.addEventListener('keydown', this.handleKeydown.bind(this));
   }
 
   /**

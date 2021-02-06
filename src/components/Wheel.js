@@ -30,6 +30,7 @@ export default class Wheel extends Container {
     this._particles = new Container();
 
     this.spinning = false;
+    this.spunOnce = false;
     this.previousActiveSector = -1;
 
     this._addParts();
@@ -40,7 +41,7 @@ export default class Wheel extends Container {
    * @private
    */
   _addSectors() {
-    const numberOfSectors = 12;
+    const numberOfSectors = this.sectorValues.length;
 
     for (let i = 0; i < numberOfSectors; i++) {
       const sectorRotation = i * Math.PI / (numberOfSectors / 2);
@@ -160,21 +161,27 @@ export default class Wheel extends Container {
    * @return {Promise}
    */
   async spinWheel(result) {
-    if (this.spinning) return;
+    if (this.spunOnce) return;
     if (this.idleSpinTween) this.idleSpinTween.kill();
 
-    console.log(result);
     this.emit(config.events.SPIN_START);
-    // Assets.sounds.spinning.play();
 
     this.spinning = true;
+    this.spunOnce = true;
     this._blurWheel();
     this._emitParticles();
     gsap.to(this._prompt, { alpha: 0, duration: 0.1 }); // Hide text prompt
 
+    let resultIndex = this.sectorValues.indexOf(result);
+
+    if (resultIndex < 0) {
+      console.error('Sector value not found');
+      resultIndex = 0;
+    };
+
     this._sectors.rotation = 0;
     await gsap.to(this._sectors, {
-      rotation: 40 + (Math.random() * Math.PI * 2),
+      rotation: (Math.PI * 12) - (resultIndex * (Math.PI / (this.sectorValues.length / 2))),
       duration: 9,
       onUpdate: this._onRotation.bind(this),
       onComplete: this._onSpinComplete.bind(this),
