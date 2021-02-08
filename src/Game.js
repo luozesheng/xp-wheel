@@ -1,6 +1,7 @@
 import Splash from './scenes/Splash';
 import Play from './scenes/Play';
 import { Container } from 'pixi.js';
+import config from './config';
 
 /**
  * Main game stage, manages scenes/levels.
@@ -18,10 +19,11 @@ export default class Game extends Container {
   /**
    * @param {PIXI.Sprite} background 
    */
-  constructor({ background } = {}) {
+  constructor(sectorValues) {
     super();
 
-    this._background = background;
+    this.sectorValues = sectorValues;
+    this.play = new Play();
     this.currentScene = null;
   }
 
@@ -29,7 +31,26 @@ export default class Game extends Container {
     await this.switchScene(Splash, { scene: 'splash' });
     await this.currentScene.finish;
 
-    this.switchScene(Play, { scene: 'play' });
+    // this.switchScene(Play, { scene: 'play' });
+    this.switchScenePlay();
+  }
+
+  /**
+   * Switches to the play scene
+   */
+  switchScenePlay() {
+    this.removeChild(this.currentScene);
+
+    Object.values(config.events).forEach((event) => {
+      this.play.once(event, () => { 
+        this.emit(event);
+      });
+    });
+
+    this.addChild(this.play);
+    this.emit(Game.events.SWITCH_SCENE, { scene: 'play' });
+
+    return this.play.onCreated(this.sectorValues);
   }
 
   /**
@@ -41,7 +62,6 @@ export default class Game extends Container {
     this.currentScene = new constructor();
     this.currentScene.background = this._background;
     this.addChild(this.currentScene);
-
     this.emit(Game.events.SWITCH_SCENE, { scene });
 
     return this.currentScene.onCreated();

@@ -1,4 +1,4 @@
-import { Sprite, Application } from 'pixi.js';
+import { Sprite, Application, utils } from 'pixi.js';
 import config from '../config';
 import Game from '../Game';
 import { Viewport } from 'pixi-viewport';
@@ -10,14 +10,27 @@ import Assets from './AssetManager';
  * All configurations are described in src/config.js
  */
 export default class GameApplication extends Application {
-  constructor() {
+  // eslint-disable-next-line max-len
+  constructor(sectorValues = ['100xp', '200xp', '300xp', '400xp', '500xp', '600xp', '700xp', '800xp', '900xp', '910xp', '920xp', '930xp']) {
     super(config.view);
 
+    this.sectorValues = sectorValues;
+    this.emitter = new utils.EventEmitter();
     this.config = config;
     Assets.renderer = this.renderer;
 
     this.setupViewport();
     this.initGame();
+
+    this.container = this.view;
+  }
+
+  /**
+   * Spin the wheel to the chosen result
+   * @param {String} result The result that you want the wheel to spin to
+   */
+  spin(result) {
+    this.game.play.wheel.spinWheel(result);
   }
 
   /**
@@ -26,17 +39,35 @@ export default class GameApplication extends Application {
    *
    */
   async initGame() {
-    await this.createBackground();
-
-    this.game = new Game({
-      background: this.background,
+    // await this.createBackground();
+    this.game = new Game(this.sectorValues);
+    
+    Object.values(config.events).forEach((event) => {
+      this.game.once(event, () => { 
+        this.emitter.emit(event);
+      });
     });
+
+    this.game.once(config.events.SHOW_END, () => {
+      document.addEventListener('keydown', this.handleKeydown.bind(this));
+    });
+
     this.viewport.addChild(this.game);
 
     center(this.viewport, this.config.view);
     this.onResize();
 
     this.game.start();
+  }
+
+  /**
+   * Handles the keydown event
+   * @param {Event} e keydown event
+   */
+  handleKeydown(e) {
+    if (e.code === 'Space') {
+      this.spin(this.sectorValues[Math.floor(Math.random() * this.sectorValues.length)]);
+    }
   }
 
   /**
@@ -78,8 +109,8 @@ export default class GameApplication extends Application {
      * @param  {Number} height        The updated viewport width
      */
   onResize(width = this.config.view.width, height = this.config.view.height) {
-    this.background.x = width / 2;
-    this.background.y = height / 2;
+    // this.background.x = width / 2;
+    // this.background.y = height / 2;
     this.game.onResize(width, height);
 
     if (this.config.view.centerOnResize) {

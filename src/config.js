@@ -2,7 +2,7 @@ export default {
   view: {
     width: window.innerWidth,
     height: window.innerHeight,
-    backgroundColor: 0xffffff,
+    transparent: true,
     worldWidth: 1000,
     worldHeight: 500,
     resizeTo: window,
@@ -23,5 +23,13 @@ export default {
   },
   assets: {
     root: '/',
+  },
+  events: {
+    SHOW_START: 'show_start',
+    SHOW_END: 'show_end',
+    SPIN_START: 'spin_start',
+    SPIN_END: 'spin_end',
+    HIDE_START: 'hide_start',
+    HIDE_END: 'hide_end',
   },
 };

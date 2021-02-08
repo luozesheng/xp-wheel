@@ -42,3 +42,22 @@ export function center(element, { width, height },
 export function random(min, max) {
   return Math.random() * (max - min) + min;
 }
+
+/**
+ * @param {Object} point1 { x, y } 
+ * @param {Object} point2 { x, y }
+ */
+export function distanceBetween2PointsSquared(p1, p2) {
+  return ((p2.x - p1.x) ** 2 + (p2.y - p1.y) ** 2); 
+}
+
+/**
+ * @desc setTimeout wrapped in a promise
+ * @param {Number} time 
+ * @returns {Promise}
+ */
+export function delay(time) {
+  return new Promise((reslove) => {
+    setTimeout(() => { reslove(); }, time);
+  });
+}

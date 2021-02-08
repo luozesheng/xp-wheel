@@ -27,9 +27,17 @@ export default class Splash extends Scene {
   preload() {
     const images = {
       logo: Assets.images.logo,
+      flap: Assets.images.flap,
+      sector1: Assets.images.sector1,
+      sector2: Assets.images.sector2,
+      star: Assets.images.star,
+      wheel: Assets.images.wheel,
     };
     const sounds = {
-      
+      spinningWheel: Assets.sounds.spinningWheel, // Credit: https://www.youtube.com/channel/UCA8luKdJ7MAFj4-LB3gFjXQ
+      spinning: Assets.sounds.spinning,
+      spinComplete: Assets.sounds.spinComplete,
+      wheelTick: Assets.sounds.wheelTick,
     };
 
     return super.preload({ images, sounds });

@@ -1,11 +1,11 @@
-# ⚙ PIXI Boilerplate
-This project is used as a boilerplate for tasks in the "PIXI.js" course in Booost. Takes care of loading assets and intiliazing the scene. Just drop your images and sounds, set your viewport size and start coding. This is a fork of [PIXI.js Boilerplate](https://github.com/dopamine-lab/pixi-boilerplate)
+# 🎡 Wheel Of XP
+![Wheel Of XP](https://faust.s-ul.eu/zQWyUbts)
 
-Includes:
-* 📦 Bundling via Webpack
-* 🏝 Scene management
-* ✨ Out of the box loader with progress bar, see `src/scenes/Splash.js`
-* 📐 Viewport fitting and resize handling, see `Application.setupViewport()` in `src/core/Application.js`
+The Wheel Of XP Bounty Pass task at www.booost.bg. 
+
+This project implements a spinning wheel of fortune using PixiJS and GSAP.
+
+[<img src="https://img.shields.io/badge/ooo-zdr-yellow">](https://booost.bg/)
 
 ## Available Commands
 
@@ -24,27 +24,6 @@ server by running `npm start`.
 After starting the development server with `npm start`, you can edit any files in the `src` folder
 and webpack will automatically recompile and reload your server (available at `http://localhost:8080`
 by default).
-
-### Scenes
-Easily switch different Scenes which are just PIXI.Containers
-```
-await this.switchScene(Splash, { scene: 'splash' });
-await this.currentScene.finish;
-
-this.switchScene(Play, { scene: 'play' });
-```
-
-### Parsing Spritesheets
-The AssetManager class has parsing and caching spritesheets internally. You can use spritesheets for animations via PIXI.AnimatedSprite.
-```
-import fire from './static/fire.json';
-
-...
-
-await Assets.prepareSpritesheets([
-  { texture: 'fire', data: fire }
-]);
-```
 
 ### Code Linter
 
