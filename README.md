@@ -1,5 +1,5 @@
 # 🎡 Wheel Of XP
-![Wheel Of XP](https://faust.s-ul.eu/zQWyUbts)
+![Wheel Of XP](https://faust.s-ul.eu/qKKv6Uha)
 
 The Wheel Of XP Bounty Pass task at www.booost.bg. 
 
