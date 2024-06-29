@@ -20,7 +20,7 @@ export default class Tsuro extends Container {
 
     this.video.loop = true;
     this.video.muted = true;
-    this.video.play();
+    // this.video.play();
 
     this.video.addEventListener('loadeddata', this.init.bind(this));
   }
